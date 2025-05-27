@@ -11,7 +11,7 @@ export default function AppRapierPhysics() {
     <Canvas shadows camera={{ position: [10, 10, 10], fov: 60 }}>
       <color attach="background" args={['#ececec']} />
       <Suspense>
-        <Physics debug>
+        <Physics gravity={[0, -9.81, 0]}>
           <Experience />
         </Physics>
       </Suspense>
