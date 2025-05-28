@@ -20,25 +20,24 @@ export default function Experience() {
 }
 
 function InvertedSphereCollider() {
-  // 반전된 geometry
   const geometry = useMemo(() => {
-    // 메인 구체
-    const sphere = new THREE.SphereGeometry(4, 64, 64);
-    const sphereMesh = new THREE.Mesh(sphere);
+    const box = new THREE.Mesh(new THREE.BoxGeometry(6, 5.1, 5.5));
+    const sphere = new THREE.Mesh(new THREE.SphereGeometry(2.6, 30, 30));
 
-    // 구멍을 만들기 위한 작은 구체 (SmallBall과 같은 크기)
-    const holeSphere = new THREE.Mesh(new THREE.SphereGeometry(0.6, 32, 32));
+    // Make sure the .matrix of each mesh is current
+    box.updateMatrix();
+    sphere.updateMatrix();
 
-    holeSphere.geometry.translate(0, -4, 0);
-    const result = CSG.subtract(sphereMesh, holeSphere);
+    // perform operations on the meshes
+    const subRes = CSG.subtract(box, sphere);
 
-    return result.geometry;
+    return subRes.geometry;
   }, []);
 
   return (
     <RigidBody type="fixed" colliders="trimesh" restitution={1}>
       <mesh geometry={geometry}>
-        <meshStandardMaterial color="lightgray" side={THREE.BackSide} transparent opacity={0.5} />
+        <meshStandardMaterial color="yellow" side={THREE.BackSide} transparent opacity={0.1} />
       </mesh>
     </RigidBody>
   );
