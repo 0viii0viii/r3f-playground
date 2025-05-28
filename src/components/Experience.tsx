@@ -3,6 +3,7 @@ import { OrbitControls } from '@react-three/drei';
 import { RigidBody } from '@react-three/rapier';
 import { useMemo } from 'react';
 import * as THREE from 'three';
+import { CSG } from 'three-csg-ts';
 
 export default function Experience() {
   return (
@@ -12,7 +13,7 @@ export default function Experience() {
       <OrbitControls />
       <InvertedSphereCollider />
       {Array.from({ length: 45 }).map((_, i) => (
-        <SmallBall key={i} position={randomPointInSphere(4.5)} index={i} />
+        <SmallBall key={i} position={randomPointInSphere(3)} index={i} />
       ))}
     </>
   );
@@ -21,14 +22,23 @@ export default function Experience() {
 function InvertedSphereCollider() {
   // 반전된 geometry
   const geometry = useMemo(() => {
-    const g = new THREE.SphereGeometry(5, 64, 64);
-    return g;
+    // 메인 구체
+    const sphere = new THREE.SphereGeometry(4, 64, 64);
+    const sphereMesh = new THREE.Mesh(sphere);
+
+    // 구멍을 만들기 위한 작은 구체 (SmallBall과 같은 크기)
+    const holeSphere = new THREE.Mesh(new THREE.SphereGeometry(0.6, 32, 32));
+
+    holeSphere.geometry.translate(0, -4, 0);
+    const result = CSG.subtract(sphereMesh, holeSphere);
+
+    return result.geometry;
   }, []);
 
   return (
-    <RigidBody type="fixed" colliders="trimesh" restitution={1.5}>
+    <RigidBody type="fixed" colliders="trimesh" restitution={1}>
       <mesh geometry={geometry}>
-        <meshStandardMaterial color="lightgray" side={THREE.BackSide} transparent opacity={0.2} />
+        <meshStandardMaterial color="lightgray" side={THREE.BackSide} transparent opacity={0.5} />
       </mesh>
     </RigidBody>
   );
