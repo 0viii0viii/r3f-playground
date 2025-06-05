@@ -21,15 +21,22 @@ export default function Experience() {
 
 function InvertedSphereCollider() {
   const geometry = useMemo(() => {
-    const box = new THREE.Mesh(new THREE.BoxGeometry(6, 5.1, 5.5));
-    const sphere = new THREE.Mesh(new THREE.SphereGeometry(2.6, 30, 30));
+    const sphere = new THREE.Mesh(new THREE.SphereGeometry(5, 30, 30));
+    // OctahedronGeometry(radius, detail
+    // radius: 정팔면체의 크기를 결정하는 반지름 값 (4)
+    // detail: 세분화 수준. 0은 기본 정팔면체, 값이 커질수록 더 구형에 가까워짐 (0)
+    const diamond = new THREE.Mesh(new THREE.OctahedronGeometry(4, 0));
+
+    // 마름모를 세로로 회전
+    diamond.rotation.x = Math.PI / 2;
+    diamond.scale.set(1, 1, 1.5); // 세로로 더 길게 늘림
 
     // Make sure the .matrix of each mesh is current
-    box.updateMatrix();
     sphere.updateMatrix();
+    diamond.updateMatrix();
 
     // perform operations on the meshes
-    const subRes = CSG.subtract(box, sphere);
+    const subRes = CSG.subtract(sphere, diamond);
 
     return subRes.geometry;
   }, []);
@@ -37,7 +44,13 @@ function InvertedSphereCollider() {
   return (
     <RigidBody type="fixed" colliders="trimesh" restitution={1}>
       <mesh geometry={geometry}>
-        <meshStandardMaterial color="yellow" side={THREE.BackSide} transparent opacity={0.1} />
+        <meshStandardMaterial
+          color="white"
+          side={THREE.FrontSide}
+          transparent
+          opacity={0.2}
+          depthWrite={false}
+        />
       </mesh>
     </RigidBody>
   );
