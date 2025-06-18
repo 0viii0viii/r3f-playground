@@ -8,6 +8,7 @@ export default function Scene() {
   const [degraded, degrade] = useState(false);
   return (
     <Canvas shadows camera={{ position: [0, -30, 0], fov: 60 }}>
+      <ambientLight intensity={0.5} />
       <OrbitControls
         enableZoom={true}
         enablePan={true}
@@ -30,24 +31,23 @@ export default function Scene() {
 
 function McGrow(props: any) {
   const { scene, nodes, materials } = useGLTF('/mcgrow2.glb') as any;
-  console.log(materials);
 
   return (
     <group {...props} dispose={null}>
-      <mesh geometry={nodes.Sphere001.geometry}>
-        <meshStandardMaterial color="red" />
+      <mesh geometry={nodes.Sphere001.geometry} material={materials.Sphere001}>
+        <meshStandardMaterial color="#d32f2f" />
       </mesh>
       <mesh geometry={nodes['모자001'].geometry}>
-        <meshStandardMaterial color="#ffff00" />
+        <meshStandardMaterial color="#d32f2f" />
       </mesh>
       <mesh geometry={nodes['바디002'].geometry}>
-        <meshStandardMaterial color="yellow" />
+        <meshStandardMaterial color="#000" />
       </mesh>
       <mesh geometry={nodes['발'].geometry}>
         <meshStandardMaterial color="green" />
       </mesh>
       <mesh geometry={nodes['배떄지'].geometry}>
-        <meshStandardMaterial color="blue" />
+        <meshStandardMaterial color="#fff" />
       </mesh>
     </group>
   );
