@@ -1,6 +1,7 @@
 'use client';
 import { OrbitControls, useGLTF } from '@react-three/drei';
 import { Canvas, useFrame } from '@react-three/fiber';
+import { Physics, RigidBody } from '@react-three/rapier';
 import React, { useEffect, useRef, useState } from 'react';
 import * as THREE from 'three';
 
@@ -62,56 +63,54 @@ function Wall({
 }
 
 function McGrow(props: any) {
-  const { scene, nodes, materials } = useGLTF('/McGraw.glb') as any;
+  const { scene, nodes, materials } = useGLTF('/Mcgraw2.glb') as any;
   console.log(nodes);
 
   return (
-    <group {...props} dispose={null}>
-      <mesh geometry={nodes['모자'].geometry}>
-        <meshStandardMaterial color="#d32f2f" />
-      </mesh>
-      <mesh geometry={nodes['눈'].geometry}>
-        <meshStandardMaterial color="#000" />
-      </mesh>
-      <mesh geometry={nodes['부리'].geometry}>
-        <meshStandardMaterial color="#ff9800" />
-      </mesh>
-      <mesh geometry={nodes['바디'].geometry}>
-        <meshStandardMaterial color="#000" />
-      </mesh>
-      <mesh geometry={nodes['배떄지'].geometry}>
-        <meshStandardMaterial color="#fff" />
-      </mesh>
-      <mesh geometry={nodes['발'].geometry}>
-        <meshStandardMaterial color="green" />
-      </mesh>
-    </group>
+    <RigidBody type="dynamic" colliders="cuboid" restitution={1} friction={1}>
+      <group {...props} dispose={null}>
+        <mesh geometry={nodes['모자'].geometry}>
+          <meshStandardMaterial color="#d32f2f" />
+        </mesh>
+        <mesh geometry={nodes['눈'].geometry} position={[2, -8, 76]}>
+          <meshPhysicalMaterial
+            color="#000"
+            metalness={1}
+            roughness={0}
+            clearcoat={1}
+            clearcoatRoughness={0}
+            reflectivity={1}
+            sheen={1}
+            sheenColor="#000"
+          />
+        </mesh>
+        <mesh geometry={nodes['부리'].geometry}>
+          <meshStandardMaterial color="#ff9800" />
+        </mesh>
+        <mesh geometry={nodes['바디'].geometry}>
+          <meshStandardMaterial color="#000" />
+        </mesh>
+        <mesh geometry={nodes['배떄지'].geometry} position={[0, -1, 0]}>
+          <meshStandardMaterial color="#fff" />
+        </mesh>
+        <mesh geometry={nodes['발'].geometry} position={[0, 0, -60]}>
+          <meshStandardMaterial color="#F2CBCB" />
+        </mesh>
+      </group>
+    </RigidBody>
   );
 }
 
 function Showcase({ position }: { position: [number, number, number] }) {
   return (
     <group position={position}>
-      <mesh castShadow>
-        <boxGeometry args={[1, 2.5, 1]} />
-        <meshPhysicalMaterial
-          color="#fff" // 재질의 기본 색상
-          transmission={1} // 투명도 정도 (0-1)
-          roughness={0} // 표면의 거칠기 정도 (0-1)
-          thickness={1} // 재질의 두께
-          ior={1.5} // 굴절률 (Index of Refraction)
-          transparent={true} // 투명 여부
-          opacity={0.3} // 불투명도 (0-1)
-          metalness={0} // 금속성 정도 (0-1)
-          reflectivity={0.1} // 반사도 (0-1)
-          envMapIntensity={1} // 환경 맵 강도
-          clearcoat={1} // 클리어코트 강도 (0-1)
-          clearcoatRoughness={0} // 클리어코트 표면 거칠기 (0-1)
-          attenuationColor="#fff" // 감쇠 색상
-          attenuationDistance={0.5} // 감쇠 거리
-        />
-      </mesh>
-      <McGrow scale={0.01} position={[0, 0, 0]} rotation={[Math.PI / 2, Math.PI, Math.PI]} />
+      <RigidBody type="fixed" colliders="cuboid">
+        <mesh castShadow>
+          <boxGeometry args={[1, 1.5, 1]} />
+          <meshStandardMaterial color="#fff" />
+        </mesh>
+      </RigidBody>
+      <McGrow scale={0.01} position={[0, 1.8, 0]} rotation={[Math.PI / 2, Math.PI, Math.PI]} />
     </group>
   );
 }
@@ -125,21 +124,27 @@ export default function SkateboardPage() {
         <ambientLight intensity={0.5} />
         <directionalLight position={[5, 10, 7]} castShadow />
         <OrbitControls />
-        {/* 바닥 */}
-        <mesh position={[0, -0.5, 0]} receiveShadow>
-          <boxGeometry args={[WALL_SIZE, 1, WALL_SIZE]} />
-          <meshStandardMaterial color="#fff" />
-        </mesh>
-        {/* 벽 4개 */}
-        <Wall position={[0, 0.5, -WALL_SIZE / 2]} args={[WALL_SIZE, 1, 0.2]} />
-        <Wall position={[0, 0.5, WALL_SIZE / 2]} args={[WALL_SIZE, 1, 0.2]} />
-        <Wall position={[-WALL_SIZE / 2, 0.5, 0]} args={[0.2, 1, WALL_SIZE]} />
-        <Wall position={[WALL_SIZE / 2, 0.5, 0]} args={[0.2, 1, WALL_SIZE]} />
-        {/* 장식장 2개 */}
-        <Showcase position={[-2, 0.5, 2]} />
-        <Showcase position={[2, 0.5, -2]} />
-        {/* 플레이어 */}
-        <Player position={playerPos} setPosition={setPlayerPos} />
+        <Physics gravity={[0, -9.81, 0]}>
+          {/* 바닥 */}
+          <RigidBody type="fixed" colliders="cuboid">
+            <mesh position={[0, -0.5, 0]} receiveShadow>
+              <boxGeometry args={[WALL_SIZE, 1, WALL_SIZE]} />
+              <meshStandardMaterial color="#fff" />
+            </mesh>
+          </RigidBody>
+          {/* 벽 4개 */}
+          <RigidBody type="fixed" colliders="cuboid">
+            <Wall position={[0, 0.5, -WALL_SIZE / 2]} args={[WALL_SIZE, 1, 0.2]} />
+            <Wall position={[0, 0.5, WALL_SIZE / 2]} args={[WALL_SIZE, 1, 0.2]} />
+            <Wall position={[-WALL_SIZE / 2, 0.5, 0]} args={[0.2, 1, WALL_SIZE]} />
+            <Wall position={[WALL_SIZE / 2, 0.5, 0]} args={[0.2, 1, WALL_SIZE]} />
+          </RigidBody>
+          {/* 장식장 2개 */}
+          <Showcase position={[-2, 0.5, 2]} />
+          <Showcase position={[2, 0.5, -2]} />
+          {/* 플레이어 */}
+          <Player position={playerPos} setPosition={setPlayerPos} />
+        </Physics>
       </Canvas>
     </div>
   );
